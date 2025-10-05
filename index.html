@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Seat Booking App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #5544ee; /* Soft cream background */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #09ef2f; /* Teal box */
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    input {
+      width: 80%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin: 8px 5px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 6px;
+      background-color: #ff9800; /* Orange buttons */
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #e68900;
+    }
+
+    #statusBar {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #ffffff;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Seat Booking Interface</h2>
+
+    <label for="seatId">Seat ID:</label>
+    <input type="text" id="seatId" placeholder="e.g. S1" />
+
+    <label for="userId">User ID:</label>
+    <input type="text" id="userId" placeholder="e.g. Vaidehi" />
+
+    <div>
+      <button onclick="lockSeat()">Lock Seat</button>
+      <button onclick="confirmSeat()">Confirm Booking</button>
+      <button onclick="unlockSeat()">Unlock Seat</button>
+      <button onclick="cancelSeat()">Cancel Booking</button>
+      <button onclick="checkStatus()">Check Status</button>
+      <button onclick="viewAll()">View All Seats</button>
+    </div>
+
+    <div id="statusBar">🟢 Ready to book your seat!</div>
+  </div>
+
+  <script>
+    const seatStatus = {};
+
+    function getSeatAndUser() {
+      const seatId = document.getElementById("seatId").value.trim();
+      const userId = document.getElementById("userId").value.trim();
+      return { seatId, userId };
+    }
+
+    function updateStatusBar(message) {
+      document.getElementById("statusBar").innerText = message;
+    }
+
+    function lockSeat() {
+      const { seatId, userId } = getSeatAndUser();
+      if (!seatId || !userId) return updateStatusBar("❗ Please enter both Seat ID and User ID.");
+      if (seatStatus[seatId]) return updateStatusBar(⚠ Seat ${seatId} is already ${seatStatus[seatId].status}.);
+      seatStatus[seatId] = { status: "locked", user: userId };
+      updateStatusBar(🔒 Seat ${seatId} locked by ${userId}.);
+    }
+
+    function confirmSeat() {
+      const { seatId, userId } = getSeatAndUser();
+      if (!seatStatus[seatId] || seatStatus[seatId].user !== userId) {
+        return updateStatusBar(❌ Cannot confirm. Seat ${seatId} is not locked by ${userId}.);
+      }
+      seatStatus[seatId].status = "booked";
+      updateStatusBar(✅ Seat ${seatId} booked by ${userId}.);
+    }
+
+    function unlockSeat() {
+      const { seatId, userId } = getSeatAndUser();
+      if (!seatStatus[seatId] || seatStatus[seatId].user !== userId) {
+        return updateStatusBar(❌ Cannot unlock. Seat ${seatId} is not locked by ${userId}.);
+      }
+      delete seatStatus[seatId];
+      updateStatusBar(🔓 Seat ${seatId} unlocked by ${userId}.);
+    }
+
+    function cancelSeat() {
+      const { seatId, userId } = getSeatAndUser();
+      if (!seatStatus[seatId] || seatStatus[seatId].user !== userId || seatStatus[seatId].status !== "booked") {
+        return updateStatusBar(❌ Cannot cancel. Seat ${seatId} is not booked by ${userId}.);
+      }
+      delete seatStatus[seatId];
+      updateStatusBar(❌ Booking for seat ${seatId} canceled by ${userId}.);
+    }
+
+    function checkStatus() {
+      const { seatId } = getSeatAndUser();
+      if (!seatStatus[seatId]) return updateStatusBar(🟢 Seat ${seatId} is available.);
+      updateStatusBar(📋 Seat ${seatId} is ${seatStatus[seatId].status} by ${seatStatus[seatId].user}.);
+    }
+
+    function viewAll() {
+      if (Object.keys(seatStatus).length === 0) return updateStatusBar("🪑 All seats are available.");
+      let message = "📊 Current Seat Status:\n";
+      for (let seat in seatStatus) {
+        message += • ${seat}: ${seatStatus[seat].status} by ${seatStatus[seat].user}\n;
+      }
+      updateStatusBar(message);
+    }
+  </script>
+</body>
+</html>
